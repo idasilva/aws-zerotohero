@@ -10,7 +10,7 @@ import (
 
 func handler(ctx context.Context) {
 	github := github.NewGithub()
-	err := github.Initialize("0f38dc7eba1c56cd8111677b26c534b86358d6e5")
+	err := github.Initialize("accessKey")
 	if err != nil {
 		fmt.Println(err)
 	}
