@@ -11,7 +11,7 @@ type AwsConfig struct {
 func NewRemote() *AwsConfig {
 
 	aws := &aws.Config{
-		Region: aws.String("us-east-1"),
+		Region: aws.String("AWS_DEFAULT_REGION"),
 	}
 	return &AwsConfig{
 		aws,
