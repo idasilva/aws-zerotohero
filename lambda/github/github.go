@@ -1,8 +1,13 @@
 package github
 
 import (
+	"context"
+	"crypto/sha1"
+	"encoding/hex"
+	"errors"
+	"fmt"
 	"github.com/google/go-github/github"
-	"github.com/pkg/errors"
+	errs "github.com/pkg/errors"
 	"os"
 	"strconv"
 	"strings"
@@ -11,37 +16,54 @@ import (
 type Github struct {
 	auth    *Auth
 	client  *github.Client
-	repos   []*github.Repository
+	repos   []Repo
 	version string
+	context context.Context
 }
 
 func (g *Github) Initialize(accessKey string) error {
 	auth, err := g.auth.authenticate(accessKey)
 	if err != nil {
-		return errors.Wrap(err, "Fail to initialize connection...")
+		return errs.Wrap(err, "Fail to initialize connection...")
 	}
 	g.client = github.NewClient(auth)
 	return nil
 
 }
-func (g *Github) ListRepository() error {
+func (g *Github) listRepository() error {
 
 	repositories, _, err := g.client.Repositories.List(g.auth.ctx, "", nil)
 	if err != nil {
-		return errors.New("Was not possible to list repositories..")
+		return errs.New("Was not possible to list repositories..")
 	}
 
 	for _, repo := range repositories {
-		g.repos = append(g.repos, repo)
+		newRepo := Repo{
+			Name:        repo.Name,
+			FullName:    repo.FullName,
+			Description: repo.Description,
+			GitURL:      repo.GitURL,
+		}
+		g.repos = append(g.repos, newRepo)
 	}
 	return nil
 }
 
 func (g *Github) UpdateVersion() error {
-	err := g.Version()
+	err := g. NewVersionValidate()
 	if err != nil {
 		return err
 	}
+	blob, err := g.blobContent(fileName)
+	if err != nil {
+		blob = g.generateSHA(message)
+		if blob == "" {
+			return errs.Wrap(err, errors.New("was not possible generated a hash").Error())
+		}
+
+	}
+	fmt.Println(blob)
+
 	file := &github.RepositoryContentFileOptions{
 		Message: &message,
 		Content: []byte(g.version),
@@ -50,18 +72,43 @@ func (g *Github) UpdateVersion() error {
 			Name:  github.String(author),
 			Email: github.String(email),
 		},
+		SHA: github.String(blob),
 		Committer: &github.CommitAuthor{
 			Name: github.String(author),
+			Email: github.String(email),
+
 		},
 	}
 
-	g.client.Repositories.
+	_, _, err = g.client.Repositories.
 		UpdateFile(
-			g.auth.ctx, "", "", "", file)
+			g.auth.ctx, author, "rubyex", fileName, file)
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
-func (g *Github) Version() error {
+func (g *Github) generateSHA(message string) string {
+	h := sha1.New()
+	h.Write([]byte(message))
+	hash := hex.EncodeToString(h.Sum(nil))
+	return hash
+}
+
+func (g *Github) blobContent(file string) (string, error) {
+
+	fileContent, _, _, err := g.client.Repositories.GetContents(g.context, author, "rubyex", file, &github.RepositoryContentGetOptions{})
+	if err != nil {
+		return "", err
+	}
+	blob := *fileContent.SHA
+
+	return blob, nil
+
+}
+func (g *Github) NewVersionValidate() error {
 
 	var file, err = os.OpenFile("./VERSION", os.O_RDWR, 0644)
 	if err != nil {
@@ -98,7 +145,8 @@ func NewGithub() *Github {
 	return &Github{
 		NewAuthentication(),
 		github.NewClient(nil),
-		[]*github.Repository{},
-		string("version"),
+		nil,
+		string(""),
+		context.Background(),
 	}
 }

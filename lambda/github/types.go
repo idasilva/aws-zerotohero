@@ -6,4 +6,7 @@ const (
 	email = "exemplo@gmail.com"
 
 )
-var message = "increment version...."
+var (
+	message = "bumping version...."
+	fileName = "VERSION"
+)
