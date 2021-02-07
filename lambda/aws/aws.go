@@ -2,6 +2,7 @@ package aws
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
+	"os"
 )
 
 type AwsConfig struct {
@@ -11,7 +12,7 @@ type AwsConfig struct {
 func NewRemote() *AwsConfig {
 
 	aws := &aws.Config{
-		Region: aws.String("AWS_LAMBDA_REGION"),
+		Region: aws.String(os.Getenv("AWS_LAMBDA_REGION")),
 	}
 	return &AwsConfig{
 		aws,

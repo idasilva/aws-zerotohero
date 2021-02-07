@@ -43,7 +43,7 @@ func NewEcrInstance() *ContainerRegistry {
 	config := aws2.NewRemote()
 
 	ecr := ecr.New(
-		session.Must(session.NewSession(config.Configuration)), aws.NewConfig().WithRegion("AWS_LAMBDA_REGION"),
+		session.Must(session.NewSession(config.Configuration)), aws.NewConfig().WithRegion(os.Getenv("AWS_LAMBDA_REGION")),
 	)
 	return &ContainerRegistry{
 		ecr,
