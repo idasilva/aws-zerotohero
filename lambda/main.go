@@ -10,6 +10,7 @@ import (
 )
 
 func handler(ctx context.Context) {
+
 	github := github.NewGithub()
 	err := github.Initialize(os.Getenv("GITHUB_ACCESS_TOKEN"))
 	if err != nil {

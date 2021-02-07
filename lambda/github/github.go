@@ -5,9 +5,10 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"github.com/google/go-github/github"
+	"github.com/gopetbot/tidus/help"
 	errs "github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ type Github struct {
 	repos   []Repo
 	version string
 	context context.Context
+	logger  *help.Logging
 }
 
 func (g *Github) Initialize(accessKey string) error {
@@ -32,7 +34,7 @@ func (g *Github) Initialize(accessKey string) error {
 }
 func (g *Github) listRepository() error {
 
-	repositories, _, err := g.client.Repositories.List(g.auth.ctx, "", nil)
+	repositories, _, err := g.client.Repositories.List(g.auth.ctx, author, nil)
 	if err != nil {
 		return errs.New("Was not possible to list repositories..")
 	}
@@ -50,19 +52,28 @@ func (g *Github) listRepository() error {
 }
 
 func (g *Github) UpdateVersion() error {
-	err := g. NewVersionValidate()
+
+	err := g.NewVersionValidate()
 	if err != nil {
 		return err
 	}
+
+	g.logger.WithFields(logrus.Fields{
+		"oldVersion": g.version,
+	}).Info("init bumping version.....")
+
 	blob, err := g.blobContent(fileName)
 	if err != nil {
 		blob = g.generateSHA(message)
-		if blob == "" {
+		if help.IsEmpty(blob) {
 			return errs.Wrap(err, errors.New("was not possible generated a hash").Error())
 		}
 
 	}
-	fmt.Println(blob)
+
+	g.logger.WithFields(logrus.Fields{
+		"blobFile": blob,
+	}).Info("finish bumping version.....")
 
 	file := &github.RepositoryContentFileOptions{
 		Message: &message,
@@ -74,19 +85,22 @@ func (g *Github) UpdateVersion() error {
 		},
 		SHA: github.String(blob),
 		Committer: &github.CommitAuthor{
-			Name: github.String(author),
+			Name:  github.String(author),
 			Email: github.String(email),
-
 		},
 	}
 
 	_, _, err = g.client.Repositories.
 		UpdateFile(
-			g.auth.ctx, author, "rubyex", fileName, file)
+			g.auth.ctx, author, repo, fileName, file)
 
 	if err != nil {
 		return err
 	}
+
+	g.logger.WithFields(logrus.Fields{
+		"NewVersion": g.version,
+	}).Info("finish bumping version.....")
 
 	return nil
 }
@@ -99,9 +113,9 @@ func (g *Github) generateSHA(message string) string {
 
 func (g *Github) blobContent(file string) (string, error) {
 
-	fileContent, _, _, err := g.client.Repositories.GetContents(g.context, author, "rubyex", file, &github.RepositoryContentGetOptions{})
+	fileContent, _, _, err := g.client.Repositories.GetContents(g.context, author, repo, file, &github.RepositoryContentGetOptions{})
 	if err != nil {
-		return "", err
+		return help.Empty(), err
 	}
 	blob := *fileContent.SHA
 
@@ -146,7 +160,9 @@ func NewGithub() *Github {
 		NewAuthentication(),
 		github.NewClient(nil),
 		nil,
-		string(""),
+		help.Empty(),
 		context.Background(),
+		help.NewLog(),
 	}
+
 }
