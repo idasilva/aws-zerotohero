@@ -7,6 +7,9 @@ import (
 	"os"
 )
 
+// GOOS=linux go build -o main
+//zip main.zip main
+
 func handler(ctx context.Context) error{
 
 	github := github.NewGithub()
