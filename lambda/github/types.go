@@ -8,6 +8,6 @@ const (
 )
 
 var (
-	message  = "bumping version...."
+	message  = "bumping version..."
 	fileName = "VERSION"
 )
