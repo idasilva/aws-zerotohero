@@ -3,6 +3,8 @@ module github.dxc.com/projects/aws-zerotohero/lambda
 go 1.13
 
 require (
+	github.com/aws/aws-lambda-go v1.22.0
+	github.com/aws/aws-sdk-go v1.37.6
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gopetbot/tidus v1.0.2

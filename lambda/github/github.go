@@ -9,9 +9,7 @@ import (
 	"github.com/gopetbot/tidus/help"
 	errs "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"os"
-	"strconv"
-	"strings"
+	"github.dxc.com/projects/aws-zerotohero/lambda/aws/ecr"
 )
 
 type Github struct {
@@ -124,33 +122,12 @@ func (g *Github) blobContent(file string) (string, error) {
 }
 func (g *Github) NewVersionValidate() error {
 
-	var file, err = os.OpenFile("./VERSION", os.O_RDWR, 0644)
+	latestTag, err := ecr.NewEcrInstance().LatestImageTag()
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-	var version = make([]byte, 1024)
-	_, err = file.Read(version)
+	g.version = latestTag
 
-	if err != nil {
-		return err
-	}
-	newVersion, err := strconv.Atoi(strings.Split(string(version), "")[4])
-	if err != nil {
-		return err
-	}
-	newVersion += 1
-
-	_, err = file.WriteAt([]byte(strconv.Itoa(newVersion)), 4)
-	if err != nil {
-		return err
-	}
-
-	err = file.Sync()
-	if err != nil {
-		return err
-	}
-	g.version = string(version)
 	return nil
 }
 
