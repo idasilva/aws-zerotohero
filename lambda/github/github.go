@@ -49,7 +49,7 @@ func (g *Github) listRepository() error {
 	return nil
 }
 
-func (g *Github) UpdateVersion() error {
+func (g *Github) NewVersion() error {
 
 	err := g.NewVersionValidate()
 	if err != nil {
