@@ -25,7 +25,7 @@ func handler(ctx context.Context) error {
 	}
 
 	aws := codebuild.NewCodeBuild()
-	aws.Run()
+	err = aws.Run()
 	if err != nil {
 		return err
 	}
