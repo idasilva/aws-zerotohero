@@ -6,9 +6,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/codebuild"
 	"github.com/gopetbot/tidus/help"
-	_ "github.com/gopetbot/tidus/help"
+	aws2 "github.com/idasilva/aws-zerotohero/lambda/aws"
 	"github.com/sirupsen/logrus"
-	config "github.dxc.com/projects/aws-zerotohero/lambda/aws"
 	"os"
 )
 
@@ -45,7 +44,7 @@ func (p *Project) inputProjectName() error {
 
 func NewCodeBuild() *Project {
 
-	remote := config.NewRemote()
+	remote := aws2.NewRemote()
 
 	var client = codebuild.New(
 		session.Must(

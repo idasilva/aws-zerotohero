@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.dxc.com/projects/aws-zerotohero/lambda/aws/codebuild"
-	"github.dxc.com/projects/aws-zerotohero/lambda/github"
+	"github.com/idasilva/aws-zerotohero/lambda/aws/codebuild"
+	"github.com/idasilva/aws-zerotohero/lambda/github"
 	"os"
 )
 

@@ -9,7 +9,7 @@ import (
 	"github.com/gopetbot/tidus/help"
 	errs "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.dxc.com/projects/aws-zerotohero/lambda/aws/ecr"
+	"github.com/idasilva/aws-zerotohero/lambda/aws/ecr"
 )
 
 type Github struct {

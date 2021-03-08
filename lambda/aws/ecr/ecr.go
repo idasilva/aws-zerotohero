@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/gopetbot/tidus/help"
-	aws2 "github.dxc.com/projects/aws-zerotohero/lambda/aws"
+	aws2 "github.com/idasilva/aws-zerotohero/lambda/aws"
 	"os"
 )
 
