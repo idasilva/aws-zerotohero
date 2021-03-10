@@ -30,7 +30,6 @@ func (p *Project) Run() error {
 	p.logger.WithFields(logrus.Fields{
 		"projectName": p.name,
 	}).Info("started build...")
-
 	return nil
 }
 func (p *Project) inputProjectName() error {
@@ -43,14 +42,11 @@ func (p *Project) inputProjectName() error {
 }
 
 func NewCodeBuild() *Project {
-
 	remote := aws2.NewRemote()
-
 	var client = codebuild.New(
 		session.Must(
 			session.NewSession(remote.Configuration)),
-		aws.NewConfig().WithRegion(os.Getenv("AWS_LAMBDA_REGION")),
-	)
+		remote.Configuration)
 
 	return &Project{
 		client: client,

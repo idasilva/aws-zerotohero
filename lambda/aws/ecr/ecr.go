@@ -18,7 +18,6 @@ type SortImageIds []*ecr.ImageIdentifier
 func (c *ContainerRegistry) LatestImageTag() (string, error) {
 
 	var imageIds []*ecr.ImageIdentifier
-
 	params := &ecr.ListImagesInput{
 		RepositoryName: aws.String(repoName),
 		MaxResults:     aws.Int64(100),
@@ -29,10 +28,11 @@ func (c *ContainerRegistry) LatestImageTag() (string, error) {
 	if err != nil {
 		return help.Empty(), err
 	}
-	for _, imageID := range resp.ImageIds {
 
+	for _, imageID := range resp.ImageIds {
 		imageIds = append(imageIds, imageID)
 	}
+
 	latestTag := *imageIds[len(imageIds)-1].ImageTag
 
 	return latestTag, nil
@@ -41,9 +41,8 @@ func (c *ContainerRegistry) LatestImageTag() (string, error) {
 //NewEcrInstance
 func NewEcrInstance() *ContainerRegistry {
 	config := aws2.NewRemote()
-
 	ecr := ecr.New(
-		session.Must(session.NewSession(config.Configuration)), aws.NewConfig().WithRegion(os.Getenv("AWS_LAMBDA_REGION")),
+		session.Must(session.NewSession(config.Configuration)), config.Configuration,
 	)
 	return &ContainerRegistry{
 		ecr,
