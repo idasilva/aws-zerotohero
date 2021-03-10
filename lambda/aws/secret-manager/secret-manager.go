@@ -20,7 +20,7 @@ type Secret struct {
 	VersionStage *string
 }
 
-func (s *Secret) getSecret() error {
+func (s *Secret) GetSecret()( string,error) {
 
 	result, err := s.Manager.GetSecretValue(&secret.GetSecretValueInput{
 		SecretId:     s.SecretID,
@@ -33,16 +33,18 @@ func (s *Secret) getSecret() error {
 				s.logger.WithFields(logrus.Fields{
 					"err": Is,
 				}).Info("error not exist in map...")
-				return err
+				return help.Empty(), err
 			}
 			s.logger.Infof("error: %s", err)
-			return err
+			return  help.Empty(),err
 
 		} else {
 			s.logger.Info("cast err to awserr.error to get the code and...")
-			return err
+			return  help.Empty(),err
+
 		}
-		return err
+		return  help.Empty(),err
+
 	}
 
 	// Decrypts secret using the associated KMS CMK.
@@ -55,14 +57,15 @@ func (s *Secret) getSecret() error {
 		len, err := base64.StdEncoding.Decode(decodedBinarySecretBytes, result.SecretBinary)
 		if err != nil {
 			fmt.Println("Base64 Decode Error:", err)
-			return err
+			return  help.Empty(),err
+
 		}
 		decodedBinarySecret = string(decodedBinarySecretBytes[:len])
 	}
 	fmt.Println(secretString, decodedBinarySecret)
 	// Your code goes here.
 
-	return nil
+	return  secretString, nil
 }
 
 //NewSecretManager create a secrets manager client
