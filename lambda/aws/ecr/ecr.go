@@ -25,9 +25,12 @@ func (c *ContainerRegistry) LatestImageTag() (string, error) {
 	}
 
 	resp, err := c.ListImages(params)
+
 	if err != nil {
 		return help.Empty(), err
 	}
+
+
 
 	for _, imageID := range resp.ImageIds {
 		imageIds = append(imageIds, imageID)

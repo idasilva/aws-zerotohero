@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  selector: # mysql Pod Should contain same labels
+    matchLabels:
+      app: app-zerotohero
+  template:
+    metadata:
+      labels:
+        app: app-zerotohero
+    spec:
+      containers:
+        - name: zerotohero
+          # image: Image path it is set in go programing
+          ports:
+            - containerPort: 8080
+      imagePullSecrets:
+        - name: regcred

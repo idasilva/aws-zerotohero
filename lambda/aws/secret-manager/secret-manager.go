@@ -10,6 +10,7 @@ import (
 	"github.com/gopetbot/tidus/help"
 	aws2 "github.com/idasilva/aws-zerotohero/lambda/aws"
 	"github.com/sirupsen/logrus"
+	"os"
 )
 
 type Secret struct {
@@ -24,7 +25,7 @@ func (s *Secret) GetSecret()( string,error) {
 
 	result, err := s.Manager.GetSecretValue(&secret.GetSecretValueInput{
 		SecretId:     s.SecretID,
-		VersionStage: s.VersionStage,
+		//VersionStage: s.VersionStage,
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
@@ -35,10 +36,12 @@ func (s *Secret) GetSecret()( string,error) {
 				}).Info("error not exist in map...")
 				return help.Empty(), err
 			}
-			s.logger.Infof("error: %s", err)
+			message :=  err.Error()
+			s.logger.Infof("error: %s",message)
 			return  help.Empty(),err
 
 		} else {
+			fmt.Println("ola")
 			s.logger.Info("cast err to awserr.error to get the code and...")
 			return  help.Empty(),err
 
@@ -62,8 +65,9 @@ func (s *Secret) GetSecret()( string,error) {
 		}
 		decodedBinarySecret = string(decodedBinarySecretBytes[:len])
 	}
-	fmt.Println(secretString, decodedBinarySecret)
-	// Your code goes here.
+	if help.IsEmpty(secretString){
+		return decodedBinarySecret, nil
+	}
 
 	return  secretString, nil
 }
@@ -76,7 +80,8 @@ func NewSecretManager() Secret {
 
 	return Secret{
 		Manager:      manager,
-		SecretID:     aws.String("AWS_SECRET_NAME"),
-		VersionStage: aws.String("AWSCURRENT"),
+		logger: help.NewLog(),
+		SecretID:     aws.String(os.Getenv("AWS_SECRET_NAME")),
+		//VersionStage: aws.String(os.Getenv("AWSCURRENT")),
 	}
 }

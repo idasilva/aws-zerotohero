@@ -1,18 +1,97 @@
 package client
 
 import (
-	s"github.com/idasilva/aws-zerotohero/lambda/aws/secret-manager"
+	"context"
+	"fmt"
+	"github.com/gopetbot/tidus/help"
+	ecr2 "github.com/idasilva/aws-zerotohero/lambda/aws/ecr"
+	s "github.com/idasilva/aws-zerotohero/lambda/aws/secret-manager"
+	"github.com/sirupsen/logrus"
+	"io/ioutil"
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"os"
 )
 
+type K8s struct {
+	kubectl *kubernetes.Clientset
+	logger  *help.Logging
+}
+//ApplyDeployment
+func (k *K8s) ApplyDeployment() error {
 
-func makeConfig() (*rest.Config, error){
+	k.logger.Info("its will try put deployment on cluster..")
 
+	tag, err:= ecr2.NewEcrInstance().LatestImageTag()
+	if err != nil{
+		k.logger.WithFields(logrus.Fields{
+			"tag":tag,
+		}).Info("it was not possible get latest image from ecr...")
+		return err
+	}
+
+	deployment, err := k.ReadDeploymentFromYaml()
+	if err != nil{
+		k.logger.Info("it was not possible read yaml....")
+		return err
+	}
+
+	image := fmt.Sprintf(os.Getenv("AWS_ECR_URI")+tag)
+
+    deployment.Spec.Template.Spec.Containers[0].Image =  image
+	clt := k.kubectl.AppsV1().Deployments(k.NameSpace())
+	if err != nil {
+		return err
+	}
+
+	deployment, err = clt.Create(context.TODO(), deployment, v1.CreateOptions{})
+	if err != nil {
+		return err
+	}
+
+	k.logger.WithFields(logrus.Fields{
+		"image": image,
+		"status":      deployment.Status,
+		"name":        deployment.Name,
+		"api-version": deployment.APIVersion,
+		"namespace":   deployment.Namespace,
+	}).Info("deployment done with success...")
+	return nil
+}
+//ReadDeploymentFromYaml
+func(k *K8s) ReadDeploymentFromYaml() (*appsv1.Deployment, error){
+	dir, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	yamlFile, err := ioutil.ReadFile(dir+"/k8s/deployment.yaml")
+	if err != nil {
+		k.logger.Infof("yamlFile.Get err %v ", err)
+		return nil, err
+	}
+
+    deployment := &appsv1.Deployment{}
+	dec := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
+	_, _, err = dec.Decode(yamlFile, nil, deployment)
+	if err != nil{
+		return nil, err
+	}
+	return deployment, nil
+}
+//NameSpace
+func (k *K8s) NameSpace() string {
+	return "digital"
+}
+
+func makeConfig() (*rest.Config, error) {
 	manager := s.NewSecretManager()
 	secret, err := manager.GetSecret()
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
@@ -25,18 +104,22 @@ func makeConfig() (*rest.Config, error){
 	if err != nil {
 		return nil, err
 	}
-	return cfg,nil
+	return cfg, nil
 }
+
 //KubeConfig
-func KubeConfig() *kubernetes.Clientset{
-	cfg , err := makeConfig()
+func KubeConfig() (*K8s, error) {
+	cfg, err := makeConfig()
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	client ,err :=  kubernetes.NewForConfig(cfg)
+	client, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return client
+	return &K8s{
+		kubectl: client,
+		logger:  help.NewLog(),
+	}, nil
 }
