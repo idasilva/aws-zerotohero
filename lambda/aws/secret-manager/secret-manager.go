@@ -18,7 +18,7 @@ type Secret struct {
 
 	logger       *help.Logging
 	SecretID     *string
-	VersionStage *string
+	//VersionStage *string
 }
 
 func (s *Secret) GetSecret()( string,error) {

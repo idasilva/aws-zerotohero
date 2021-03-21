@@ -1,20 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-deployment
+  name: app-zerotohero-v1
+  labels:
+    app: app-zerotohero
+    version: v1
 spec:
-  selector: # mysql Pod Should contain same labels
+  replicas: 1
+  selector:
     matchLabels:
       app: app-zerotohero
+      version: v1
   template:
     metadata:
       labels:
         app: app-zerotohero
+        version: v1
     spec:
       containers:
-        - name: zerotohero
-          # image: Image path it is set in go programing
+        - name:  app-zerotohero
+          image: 560978416398.dkr.ecr.us-east-1.amazonaws.com/go-zerotohero:1.0.1
           ports:
-            - containerPort: 8080
+            - containerPort: 9080
+          securityContext:
+            runAsUser: 1000
       imagePullSecrets:
         - name: regcred
+

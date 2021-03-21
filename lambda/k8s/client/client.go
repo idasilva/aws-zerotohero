@@ -3,11 +3,11 @@ package client
 import (
 	"context"
 	"fmt"
+	"github.com/gobuffalo/packr/v2"
 	"github.com/gopetbot/tidus/help"
 	ecr2 "github.com/idasilva/aws-zerotohero/lambda/aws/ecr"
-	s "github.com/idasilva/aws-zerotohero/lambda/aws/secret-manager"
+	secret_manager2 "github.com/idasilva/aws-zerotohero/lambda/aws/secret-manager"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -21,6 +21,7 @@ import (
 type K8s struct {
 	kubectl *kubernetes.Clientset
 	logger  *help.Logging
+	box *packr.Box
 }
 //ApplyDeployment
 func (k *K8s) ApplyDeployment() error {
@@ -65,19 +66,23 @@ func (k *K8s) ApplyDeployment() error {
 }
 //ReadDeploymentFromYaml
 func(k *K8s) ReadDeploymentFromYaml() (*appsv1.Deployment, error){
-	dir, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-	yamlFile, err := ioutil.ReadFile(dir+"/k8s/deployment.yaml")
-	if err != nil {
-		k.logger.Infof("yamlFile.Get err %v ", err)
+	//dir, err := os.Getwd()
+	//if err != nil {
+	//	return nil, err
+	//}
+	//yamlFile, err := ioutil.ReadFile(dir+"/k8s/deployment.yaml")
+	//if err != nil {
+	//	k.logger.Infof("yamlFile.Get err %v ", err)
+	//	return nil, err
+	//}
+	yamlFile, err := k.box.FindString("deployment.yaml")
+	if err != nil{
 		return nil, err
 	}
 
     deployment := &appsv1.Deployment{}
 	dec := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
-	_, _, err = dec.Decode(yamlFile, nil, deployment)
+	_, _, err = dec.Decode([]byte(yamlFile), nil, deployment)
 	if err != nil{
 		return nil, err
 	}
@@ -89,7 +94,7 @@ func (k *K8s) NameSpace() string {
 }
 
 func makeConfig() (*rest.Config, error) {
-	manager := s.NewSecretManager()
+	manager := secret_manager2.NewSecretManager()
 	secret, err := manager.GetSecret()
 	if err != nil {
 		return nil, err
@@ -107,8 +112,8 @@ func makeConfig() (*rest.Config, error) {
 	return cfg, nil
 }
 
-//KubeConfig
-func KubeConfig() (*K8s, error) {
+//KubeConfigF
+func KubeConfigF() (*K8s, error) {
 	cfg, err := makeConfig()
 	if err != nil {
 		return nil, err
@@ -121,5 +126,6 @@ func KubeConfig() (*K8s, error) {
 	return &K8s{
 		kubectl: client,
 		logger:  help.NewLog(),
+		box : packr.New("someBoxName", "./assets"),
 	}, nil
 }
