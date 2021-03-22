@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/gopetbot/tidus/help"
 	"github.com/idasilva/aws-zerotohero/lambda/aws/codebuild"
 	"github.com/idasilva/aws-zerotohero/lambda/aws/sns"
@@ -62,6 +63,6 @@ func handler(ctx context.Context) error {
 	return nil
 }
 func main() {
-	handler(context.Background())
-	//lambda.Start(handler)
+	//handler(context.Background())
+	lambda.Start(handler)
 }
