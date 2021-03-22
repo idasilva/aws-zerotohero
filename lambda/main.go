@@ -8,7 +8,6 @@ import (
 	"github.com/idasilva/aws-zerotohero/lambda/aws/sns"
 	"github.com/idasilva/aws-zerotohero/lambda/github"
 	client2 "github.com/idasilva/aws-zerotohero/lambda/k8s/client"
-	"github.com/aws/aws-lambda-go/lambda"
 	"os"
 )
 
@@ -21,11 +20,13 @@ func handler(ctx context.Context) error {
 	github := github.NewGithub()
 	err := github.Initialize(os.Getenv("GITHUB_ACCESS_TOKEN"))
 	if err != nil {
+		fmt.Println("1",err)
 		return err
 	}
 
 	err = github.NewVersion()
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -34,16 +35,19 @@ func handler(ctx context.Context) error {
 	aws := codebuild.NewCodeBuild()
 	err = aws.Run()
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
 	client,err:= client2.KubeConfigF()
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
 	err = client.ApplyDeployment()
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	logger.Info("deploy...")
@@ -58,6 +62,6 @@ func handler(ctx context.Context) error {
 	return nil
 }
 func main() {
-	//handler(context.Background())
-	lambda.Start(handler)
+	handler(context.Background())
+	//lambda.Start(handler)
 }

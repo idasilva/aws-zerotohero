@@ -66,15 +66,6 @@ func (k *K8s) ApplyDeployment() error {
 }
 //ReadDeploymentFromYaml
 func(k *K8s) ReadDeploymentFromYaml() (*appsv1.Deployment, error){
-	//dir, err := os.Getwd()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//yamlFile, err := ioutil.ReadFile(dir+"/k8s/deployment.yaml")
-	//if err != nil {
-	//	k.logger.Infof("yamlFile.Get err %v ", err)
-	//	return nil, err
-	//}
 	yamlFile, err := k.box.FindString("deployment.yaml")
 	if err != nil{
 		return nil, err
@@ -90,7 +81,7 @@ func(k *K8s) ReadDeploymentFromYaml() (*appsv1.Deployment, error){
 }
 //NameSpace
 func (k *K8s) NameSpace() string {
-	return "digital"
+	return "default"
 }
 
 func makeConfig() (*rest.Config, error) {
