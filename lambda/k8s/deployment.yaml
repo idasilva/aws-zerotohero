@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name:  app-zerotohero
-          image: 560978416398.dkr.ecr.us-east-1.amazonaws.com/go-zerotohero:1.0.1
+         ## image:
           ports:
             - containerPort: 9080
           securityContext:
