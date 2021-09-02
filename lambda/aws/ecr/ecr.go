@@ -51,3 +51,49 @@ func NewEcrInstance() *ContainerRegistry {
 		ecr,
 	}
 }
+
+//var imagesDetails []*ecr.ImageDetail
+	//input := &ecr.ListImagesInput{
+	//	RepositoryName: aws.String(""),
+	//	RegistryId:     aws.String(""),
+	//}
+	//
+	//pageIterator := 0
+	//err := c.ListImagesPages(input, func(page *ecr.ListImagesOutput, lastPage bool) bool {
+	//	pageIterator++
+	//
+	//	output, err := c.DescribeImages(&ecr.DescribeImagesInput{
+	//		ImageIds:       page.ImageIds,
+	//		RegistryId:     input.RegistryId,
+	//		RepositoryName: input.RepositoryName,
+	//	})
+	//
+	//	if err != nil {
+	//		return true
+	//	}
+	//
+	//	for _, i := range output.ImageDetails {
+	//		if i.ImagePushedAt.After(*LatestPushedAt) {
+	//			if len(i.ImageTags) > 0 {
+	//				imagesDetails = append(imagesDetails,i)
+	//				continue
+	//			}
+	//
+	//			logrus.WithFields(logrus.Fields{
+	//				"Digest": i.ImageDigest,
+	//			}).Warn("image does not have a tag and will not be consider to validate")
+	//		}
+	//	}
+	//
+	//	return pageIterator <= 100
+	//})
+	//
+	//if err != nil {
+	//	return "", err
+	//}
+	//
+	//sort.Slice(imagesDetails, func(i, j int) bool {
+	//	return imagesDetails[i].ImagePushedAt.Before(*imagesDetails[j].ImagePushedAt)
+	//})
+
+	//return *imagesDetails[len(imagesDetails)-1].ImageTags[0], nil
